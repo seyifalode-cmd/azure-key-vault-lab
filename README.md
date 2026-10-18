@@ -1,4 +1,9 @@
-#  Azure Key Vault Lab — Secrets & Keys Management
+# Azure Key Vault Lab — Secrets & Keys Management
+
+Oluwaseyi Michael Falode | Cloud Security Engineer | Toronto, ON | April 2026
+
+![Azure](https://img.shields.io/badge/Microsoft_Azure-Key_Vault-0078D4?style=flat&logo=microsoftazure&logoColor=white)
+![RBAC](https://img.shields.io/badge/Azure_RBAC-Least_Privilege-107C41?style=flat)
 
 Deploying and managing Azure Key Vault for secure secrets, keys, and certificate management — including RBAC vs. Vault Access Policy, purge protection, and least privilege access control.
 
@@ -9,13 +14,13 @@ Deploying and managing Azure Key Vault for secure secrets, keys, and certificate
 
 ---
 
-##  Business Scenario
+## Business Scenario
 
 Scarstack Solutions Inc. is migrating sensitive configuration settings, encryption keys, and certificates to Azure for centralized management. This lab deploys two Azure Key Vaults with **intentionally contrasting security configurations** to demonstrate real-world access control trade-offs, soft-delete behavior, and the principle of least privilege.
 
 ---
 
-##  Architecture Overview
+## Architecture Overview
 
 ```
 rg-keyvault-sec (Resource Group — East US)
@@ -32,10 +37,14 @@ rg-keyvault-sec (Resource Group — East US)
 
 ---
 
-##  Lab Steps
+## Lab Steps
 
 ### Step 1 — Create Resource Group
 Created `rg-keyvault-sec` in East US as the management boundary for both vaults. Grouping resources this way reflects enterprise practice: shared lifecycle, access control, and billing context under one logical container.
+
+![Resource group created](screenshots/resource-group-created.png)
+
+![Resource group and both vaults in Resource Manager](screenshots/tags.png)
 
 ---
 
@@ -49,6 +58,8 @@ Created `rg-keyvault-sec` in East US as the management boundary for both vaults.
 | Soft-Delete Retention | 90 days |
 
 > **Note:** The original name `kv-scarstack-sec1` was unavailable due to Azure's soft-delete name reservation (90-day hold). `kv-scarstack-sec1b` was used instead — a real-world operational constraint worth knowing.
+
+![Key Vault 1 properties showing purge protection enabled](screenshots/purge-protection-enabled.png)
 
 **Why Vault Access Policy?**  
 The traditional model: permissions granted directly on the vault per user/group/app. Simpler to configure, but less scalable than RBAC for larger teams.
@@ -73,6 +84,12 @@ Once enabled, neither users nor Microsoft can permanently delete the vault or it
 - `cert-scarstack-02`
 
 > Keys handle cryptographic operations (encryption at rest). Secrets store runtime credentials that applications pull instead of hardcoding. Certificates enable centralized SSL/TLS lifecycle management with auto-renewal, eliminating certificate sprawl.
+
+![Key Vault 1 keys](screenshots/keys-created.png)
+
+![Key Vault 1 secrets](screenshots/secrets-created.png)
+
+![Key Vault 1 certificates](screenshots/certificates-created.png)
 
 ---
 
@@ -105,6 +122,8 @@ Please wait several minutes for role assignments to become effective.
 **Why this happened:**  
 In RBAC mode, *creating* the vault and *accessing its data plane* are separate concerns. Even as the subscription Owner, no Key Vault data plane role had been assigned yet. This is least privilege in action — infrastructure ownership does not automatically grant access to the secrets stored inside.
 
+![RBAC access error on Key Vault 2](screenshots/rbac-access-error.png)
+
 ---
 
 ### Step 6 — Fix the RBAC Access Issue
@@ -119,6 +138,8 @@ Navigated to `rg-keyvault-sec > Access Control (IAM)` and created a role assignm
 
 Role propagation took approximately **6 minutes** to take effect across Azure's authorization systems.
 
+![Key Vault Administrator role assignment](screenshots/iam-role-assignment.png)
+
 ---
 
 ### Step 7 — Populate Key Vault 2 (Post-Fix)
@@ -128,6 +149,22 @@ All three objects created successfully after propagation confirmed:
 - **Key:** `test-key` (RSA-2048, Enabled)
 - **Secret:** `kv2-secret` (Enabled)
 - **Certificate:** `kv2-cert` (Self-signed, Enabled, Expires 2027-04-29)
+
+![Key Vault 2 key created](screenshots/key-created.png)
+
+![Key Vault 2 secret created](screenshots/secret-created.png)
+
+![Key Vault 2 certificate created](screenshots/certificate-created.png)
+
+---
+
+## Repository Structure
+
+```
+azure-key-vault-lab/
+├── README.md        # Lab walkthrough
+└── screenshots/     # Azure portal evidence for each step (11 images)
+```
 
 ---
 
@@ -150,5 +187,4 @@ All three objects created successfully after propagation confirmed:
 - Microsoft Entra ID
 - Azure Resource Manager
 - Azure Portal
-
 
